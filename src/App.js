@@ -78,17 +78,40 @@ class App extends Component {
         }
       },
       rowSelection: "multiple",
-      rowData: []
+      rowModelType: "infinite",
+      rowBuffer: 0,
+      paginationPageSize: 100,
+      cacheOverflowSize: 2,
+      maxConcurrentDatasourceRequests: 1,
+      maxBlocksInCache: 10,
+      infiniteInitialRowCount: 100
     };
   }
 
   onGridReady = params => {
+    const updateData = data => {
+      const dataSource = {
+        rowCount: null,
+        getRows: function(params) {
+          setTimeout(function() {
+            let rowsThisPage = data.slice(params.startRow, params.endRow);
+            let lastRow = -1;
+            if (data.length <= params.endRow) {
+              lastRow = data.length;
+            }
+            params.successCallback(rowsThisPage, lastRow);
+          }, 500);
+        }
+      };
+      params.api.setDatasource(dataSource);
+    };
+
     fetch(
       "https://raw.githubusercontent.com/ag-grid/ag-grid/master/packages/ag-grid-docs/src/olympicWinners.json"
     )
       .then(res => res.json())
       .then(data => {
-        this.setState({ rowData: data });
+        updateData(data);
       });
   };
 
@@ -111,7 +134,14 @@ class App extends Component {
             rowSelection={this.state.rowSelection}
             rowDeselection={true}
             rowBuffer={this.state.rowBuffer}
-            rowData={this.state.rowData}
+            rowModelType={this.state.rowModelType}
+            paginationPageSize={this.state.paginationPageSize}
+            cacheOverflowSize={this.state.cacheOverflowSize}
+            maxConcurrentDatasourceRequests={
+              this.state.maxConcurrentDatasourceRequests
+            }
+            infiniteInitialRowCount={this.state.infiniteInitialRowCount}
+            maxBlocksInCache={this.state.maxBlocksInCache}
           />
         </div>
       </div>
