@@ -73,48 +73,22 @@ class App extends Component {
           if (params.value !== undefined) {
             return params.value;
           } else {
-            return '<img src="../images/loading.gif">';
+            return '<img src="./loading.gif">';
           }
         }
       },
-      rowBuffer: 0,
       rowSelection: "multiple",
-      rowModelType: "infinite",
-      paginationPageSize: 100,
-      cacheOverflowSize: 2,
-      maxConcurrentDatasourceRequests: 1,
-      infiniteInitialRowCount: 1000,
-      maxBlocksInCache: 10
+      rowData: []
     };
   }
 
   onGridReady = params => {
-    const updateData = data => {
-      var dataSource = {
-        rowCount: null,
-        getRows: function(params) {
-          console.log("asking for " + params.startRow + " to " + params.endRow);
-          setTimeout(function() {
-            var rowsThisPage = data.slice(params.startRow, params.endRow);
-            var lastRow = -1;
-            if (data.length <= params.endRow) {
-              lastRow = data.length;
-            }
-            params.successCallback(rowsThisPage, lastRow);
-          }, 500);
-        }
-      };
-      console.log(dataSource);
-      params.api.setDatasource(dataSource);
-    };
-
     fetch(
       "https://raw.githubusercontent.com/ag-grid/ag-grid/master/packages/ag-grid-docs/src/olympicWinners.json"
     )
       .then(res => res.json())
       .then(data => {
-        console.log(data);
-        updateData(data);
+        this.setState({ rowData: data });
       });
   };
 
@@ -124,27 +98,20 @@ class App extends Component {
         <div
           id="myGrid"
           style={{
-            height: "100%",
-            width: "100%"
+            height: "500px",
+            width: "1000px"
           }}
           className="ag-theme-balham"
         >
           <AgGridReact
+            onGridReady={this.onGridReady}
             columnDefs={this.state.columnDefs}
             defaultColDef={this.state.defaultColDef}
             components={this.state.components}
-            rowBuffer={this.state.rowBuffer}
             rowSelection={this.state.rowSelection}
             rowDeselection={true}
-            rowModelType={this.state.rowModelType}
-            paginationPageSize={this.state.paginationPageSize}
-            cacheOverflowSize={this.state.cacheOverflowSize}
-            maxConcurrentDatasourceRequests={
-              this.state.maxConcurrentDatasourceRequests
-            }
-            infiniteInitialRowCount={this.state.infiniteInitialRowCount}
-            maxBlocksInCache={this.state.maxBlocksInCache}
-            onGridReady={this.onGridReady}
+            rowBuffer={this.state.rowBuffer}
+            rowData={this.state.rowData}
           />
         </div>
       </div>
